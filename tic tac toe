@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TIC TAC TOE</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: Times roman;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f0f0f0;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
+            margin: 20px auto;
+        }
+
+        .cell {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100px;
+            height: 100px;
+            background-color: pink;
+            border: 1px solid #ddd;
+            font-size: 2em;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .cell:hover {
+            background-color: grey;
+        }
+
+        .controls {
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: grey;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>TIC TAC TOE</h1>
+        <div class="scoreboard">
+            <p>Player X Wins: <span id="playerXWins">0</span></p>
+            <p>Player O Wins: <span id="playerOWins">0</span></p>
+        </div>
+        <div class="board" id="board">
+            <div class="cell" data-index="0"></div>
+            <div class="cell" data-index="1"></div>
+            <div class="cell" data-index="2"></div>
+            <div class="cell" data-index="3"></div>
+            <div class="cell" data-index="4"></div>
+            <div class="cell" data-index="5"></div>
+            <div class="cell" data-index="6"></div>
+            <div class="cell" data-index="7"></div>
+            <div class="cell" data-index="8"></div>
+        </div>
+        <div class="controls">
+            <button id="resetButton">RESET GAME</button>
+            <button id="aiButton">PLAY AGAINST AI</button>
+        </div>
+    </div>
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let isGameActive = true;
+        let isAIEnabled = false;
+        const playerXWins = document.getElementById('playerXWins');
+        const playerOWins = document.getElementById('playerOWins');
+        const boardElement = document.getElementById('board');
+        const resetButton = document.getElementById('resetButton');
+        const aiButton = document.getElementById('aiButton');
+        const winningConditions = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+
+        boardElement.addEventListener('click', handleCellClick);
+        resetButton.addEventListener('click', resetGame);
+        aiButton.addEventListener('click', toggleAI);
+
+        function handleCellClick(event) {
+            const clickedCell = event.target;
+            const clickedCellIndex = parseInt(clickedCell.getAttribute('data-index'));
+
+            if (board[clickedCellIndex] !== '' || !isGameActive) {
+                return;
+            }
+
+            updateCell(clickedCell, clickedCellIndex);
+            checkResult();
+
+            if (isAIEnabled && isGameActive && currentPlayer === 'O') {
+                setTimeout(handleAIMove, 500);
+            }
+        }
+
+        function updateCell(cell, index) {
+            board[index] = currentPlayer;
+            cell.textContent = currentPlayer;
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+        }
+
+        function checkResult() {
+            let roundWon = false;
+            for (let i = 0; i < winningConditions.length; i++) {
+                const [a, b, c] = winningConditions[i];
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    roundWon = true;
+                    break;
+                }
+            }
+
+            if (roundWon) {
+                isGameActive = false;
+                currentPlayer === 'X' ? playerOWins.textContent++ : playerXWins.textContent++;
+                alert(`Player ${currentPlayer === 'X' ? 'O' : 'X'} wins!`);
+            } else if (!board.includes('')) {
+                isGameActive = false;
+                alert('It\'s a draw!');
+            }
+        }
+
+        function handleAIMove() {
+            const availableCells = board.map((cell, index) => cell === '' ? index : null).filter(val => val !== null);
+            const randomCellIndex = availableCells[Math.floor(Math.random() * availableCells.length)];
+            const aiCell = document.querySelector(`.cell[data-index="${randomCellIndex}"]`);
+            updateCell(aiCell, randomCellIndex);
+            checkResult();
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            isGameActive = true;
+            document.querySelectorAll('.cell').forEach(cell => cell.textContent = '');
+        }
+
+        function toggleAI() {
+            isAIEnabled = !isAIEnabled;
+            aiButton.textContent = isAIEnabled ? 'Play with Friend' : 'Play against AI';
+            resetGame();
+        }
+    </script>
+</body>
+</html>
